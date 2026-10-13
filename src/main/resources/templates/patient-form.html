@@ -1,0 +1,55 @@
+
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавление пациента</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+<main>
+    <h1>Добавление пациента</h1>
+
+    <form th:action="@{/patients}" method="post"
+          th:object="${patient}">
+
+        <div>
+            <label for="fullName">ФИО</label>
+            <input id="fullName" type="text"
+                   th:field="*{fullName}" required>
+        </div>
+
+        <div>
+            <label for="birthDate">Дата рождения</label>
+            <input id="birthDate" type="date"
+                   th:field="*{birthDate}" required>
+        </div>
+
+        <div>
+            <label for="address">Адрес проживания</label>
+            <input id="address" type="text"
+                   th:field="*{address}" required>
+        </div>
+
+        <div>
+            <label for="districtId">Участок</label>
+            <select id="districtId" name="districtId" required>
+                <option value="">Выберите участок</option>
+
+                <option th:each="district : ${districts}"
+                        th:value="${district.id}"
+                        th:text="${district.number + ' — ' + district.address}">
+                </option>
+            </select>
+        </div>
+
+        <button type="submit">Сохранить пациента</button>
+    </form>
+
+    <p>
+        <a th:href="@{/patients}">Вернуться к списку</a>
+    </p>
+</main>
+</body>
+</html>

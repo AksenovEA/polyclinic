@@ -1,0 +1,75 @@
+
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавление врача</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+<main>
+    <h1>Добавление врача</h1>
+
+    <p th:if="${errorMessage}"
+       th:text="${errorMessage}">
+    </p>
+
+    <form th:action="@{/doctors}" method="post">
+        <div>
+            <label for="fullName">ФИО врача</label>
+            <input id="fullName"
+                   type="text"
+                   name="fullName"
+                   required>
+        </div>
+
+        <div>
+            <label for="type">Тип врача</label>
+            <select id="type" name="type" required>
+                <option value="">Выберите тип</option>
+                <option value="THERAPIST">Терапевт</option>
+                <option value="SPECIALIST">Специалист</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="districtId">Участок</label>
+            <select id="districtId" name="districtId">
+                <option value="">Выберите участок</option>
+
+                <option th:each="district : ${districts}"
+                        th:value="${district.id}"
+                        th:text="${district.number + ' — ' + district.address}">
+                </option>
+            </select>
+        </div>
+
+        <button type="submit">Сохранить врача</button>
+    </form>
+
+    <p>
+        <a th:href="@{/doctors}">К списку врачей</a>
+    </p>
+</main>
+
+<script>
+    const typeSelect = document.getElementById('type');
+    const districtSelect = document.getElementById('districtId');
+
+    function updateDistrictField() {
+        const isSpecialist = typeSelect.value === 'SPECIALIST';
+
+        districtSelect.disabled = isSpecialist;
+        districtSelect.required = typeSelect.value === 'THERAPIST';
+
+        if (isSpecialist) {
+            districtSelect.value = '';
+        }
+    }
+
+    typeSelect.addEventListener('change', updateDistrictField);
+    updateDistrictField();
+</script>
+</body>
+</html>

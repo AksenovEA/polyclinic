@@ -1,0 +1,49 @@
+
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Участки — Поликлиника</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+<main>
+    <h1>Участки</h1>
+
+    <p>
+        <a th:href="@{/}">На главную</a>
+    </p>
+
+    <p>
+        <a th:href="@{/districts/new}">Добавить участок</a>
+    </p>
+
+    <p th:if="${successMessage}"
+       th:text="${successMessage}">
+    </p>
+
+    <p th:if="${#lists.isEmpty(districts)}">
+        Участки пока не добавлены.
+    </p>
+
+    <table th:if="${not #lists.isEmpty(districts)}">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Номер участка</th>
+            <th>Адрес</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="district : ${districts}">
+            <td th:text="${district.id}"></td>
+            <td th:text="${district.number}"></td>
+            <td th:text="${district.address}"></td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>

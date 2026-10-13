@@ -1,0 +1,50 @@
+
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пациенты — Поликлиника</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+<main>
+    <h1>Пациенты</h1>
+
+    <p>
+        <a th:href="@{/patients/new}">Добавить пациента</a>
+    </p>
+
+    <p th:if="${successMessage}"
+       th:text="${successMessage}">
+    </p>
+
+    <a th:href="@{/}">На главную</a>
+
+    <p th:if="${#lists.isEmpty(patients)}">
+        Пациентов пока нет.
+    </p>
+
+    <table th:if="${not #lists.isEmpty(patients)}">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>ФИО</th>
+            <th>Дата рождения</th>
+            <th>Адрес</th>
+            <th>Участок</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="patient : ${patients}">
+            <td th:text="${patient.id}"></td>
+            <td th:text="${patient.fullName}"></td>
+            <td th:text="${patient.birthDate}"></td>
+            <td th:text="${patient.address}"></td>
+            <td th:text="${patient.district.number}"></td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>

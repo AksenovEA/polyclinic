@@ -1,0 +1,53 @@
+
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Врачи — Поликлиника</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+<main>
+    <h1>Врачи</h1>
+
+    <p>
+        <a th:href="@{/doctors/new}">Добавить врача</a>
+    </p>
+
+    <p th:if="${successMessage}"
+       th:text="${successMessage}">
+    </p>
+
+    <p>
+        <a th:href="@{/}">На главную</a>
+    </p>
+
+    <p th:if="${#lists.isEmpty(doctors)}">
+        Врачи пока не добавлены.
+    </p>
+
+    <table th:if="${not #lists.isEmpty(doctors)}">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>ФИО</th>
+            <th>Тип врача</th>
+            <th>Участок</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="doctor : ${doctors}">
+            <td th:text="${doctor.id}"></td>
+            <td th:text="${doctor.fullName}"></td>
+            <td th:text="${doctor.type}"></td>
+            <td th:text="${doctor.district != null
+                ? doctor.district.number
+                : 'Не закреплён'}"></td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>

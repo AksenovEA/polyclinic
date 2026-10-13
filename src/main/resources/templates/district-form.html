@@ -1,0 +1,45 @@
+
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавление участка</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+<main>
+    <h1>Добавление участка</h1>
+
+    <p th:if="${errorMessage}"
+       th:text="${errorMessage}">
+    </p>
+
+    <form th:action="@{/districts}" method="post">
+        <div>
+            <label for="number">Номер участка</label>
+            <input id="number"
+                   type="number"
+                   name="number"
+                   min="1"
+                   required>
+        </div>
+
+        <div>
+            <label for="address">Адрес участка</label>
+            <input id="address"
+                   type="text"
+                   name="address"
+                   maxlength="255"
+                   required>
+        </div>
+
+        <button type="submit">Сохранить участок</button>
+    </form>
+
+    <p>
+        <a th:href="@{/districts}">Вернуться к списку</a>
+    </p>
+</main>
+</body>
+</html>

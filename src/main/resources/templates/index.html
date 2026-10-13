@@ -1,12 +1,11 @@
 
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Поликлиника</title>
-    <link rel="stylesheet" href="/style.css">
-    <script src="/app.js" defer></script>
+    <link rel="stylesheet" th:href="@{/style.css}">
 </head>
 <body>
 <div class="layout">
@@ -15,21 +14,13 @@
         <p class="subtitle">Система управления</p>
 
         <nav>
-            <button class="nav-button active" data-page="home">
-                Главная
-            </button>
-            <button class="nav-button" data-page="doctors">
-                Врачи и расписание
-            </button>
-            <button class="nav-button" data-page="patients">
-                Пациенты
-            </button>
-            <button class="nav-button" data-page="districts">
-                Участки
-            </button>
-            <button class="nav-button" data-page="appointments">
-                Запись на приём
-            </button>
+            <nav>
+                <a class="nav-button" th:href="@{/}">Главная</a>
+                <a class="nav-button" th:href="@{/doctors}">Врачи и расписание</a>
+                <a class="nav-button" th:href="@{/patients}">Пациенты</a>
+                <a class="nav-button" th:href="@{/districts}">Участки</a>
+                <a class="nav-button" th:href="@{/appointments}">Запись на приём</a>
+            </nav>
         </nav>
     </aside>
 
@@ -50,5 +41,6 @@
         </section>
     </main>
 </div>
+<script th:src="@{/app.js}"></script>
 </body>
 </html>
