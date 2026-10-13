@@ -100,6 +100,13 @@ async function loadDoctors() {
         const heading = document.createElement("h2");
         heading.textContent = "Список врачей";
 
+        const addButton = document.createElement("button");
+        addButton.className = "action-button";
+        addButton.textContent = "+ Добавить врача";
+        addButton.addEventListener("click", showDoctorForm);
+
+        card.append(heading, addButton);
+
         const table = document.createElement("table");
         table.className = "data-table";
 
@@ -160,7 +167,7 @@ async function loadDoctors() {
             });
 
             table.append(thead, tbody);
-            card.append(heading, table);
+            card.append(table);
         }
 
         pageContent.append(card);
@@ -168,6 +175,199 @@ async function loadDoctors() {
     } catch (error) {
         showError(`Не удалось загрузить врачей. ${error.message}`);
     }
+}
+
+
+async function showDoctorForm() {
+    let districts;
+
+    try {
+        const response = await fetch("/api/districts");
+
+        if (!response.ok) {
+            throw new Error(`Ошибка сервера: ${response.status}`);
+        }
+
+        districts = await response.json();
+    } catch (error) {
+        showError(`Не удалось загрузить участки. ${error.message}`);
+        return;
+    }
+
+    pageContent.replaceChildren();
+
+    const card = document.createElement("div");
+    card.className = "welcome-card";
+
+    const heading = document.createElement("h2");
+    heading.textContent = "Добавление врача";
+
+    const form = document.createElement("form");
+    form.className = "patient-form";
+
+    // ФИО врача
+    const nameWrapper = document.createElement("div");
+    nameWrapper.className = "form-field";
+
+    const nameLabel = document.createElement("label");
+    nameLabel.htmlFor = "doctorFullName";
+    nameLabel.textContent = "ФИО врача";
+
+    const nameInput = document.createElement("input");
+    nameInput.id = "doctorFullName";
+    nameInput.name = "fullName";
+    nameInput.type = "text";
+    nameInput.maxLength = 255;
+    nameInput.placeholder = "Иванов Иван Иванович";
+    nameInput.required = true;
+
+    nameWrapper.append(nameLabel, nameInput);
+
+    // Тип врача
+    const typeWrapper = document.createElement("div");
+    typeWrapper.className = "form-field";
+
+    const typeLabel = document.createElement("label");
+    typeLabel.htmlFor = "doctorType";
+    typeLabel.textContent = "Тип врача";
+
+    const typeSelect = document.createElement("select");
+    typeSelect.id = "doctorType";
+    typeSelect.name = "type";
+    typeSelect.required = true;
+
+    typeSelect.add(new Option("Выберите тип врача", ""));
+    typeSelect.add(new Option("Терапевт", "THERAPIST"));
+    typeSelect.add(new Option("Специалист", "SPECIALIST"));
+
+    typeWrapper.append(typeLabel, typeSelect);
+
+    // Участок — обязателен только для терапевта
+    const districtWrapper = document.createElement("div");
+    districtWrapper.className = "form-field";
+
+    const districtLabel = document.createElement("label");
+    districtLabel.htmlFor = "doctorDistrict";
+    districtLabel.textContent = "Участок";
+
+    const districtSelect = document.createElement("select");
+    districtSelect.id = "doctorDistrict";
+    districtSelect.name = "districtId";
+
+    districtSelect.add(new Option("Выберите участок", ""));
+
+    districts.forEach(district => {
+        districtSelect.add(new Option(
+            `Участок № ${district.number}`,
+            district.id
+        ));
+    });
+
+    districtWrapper.append(districtLabel, districtSelect);
+    districtWrapper.hidden = true;
+
+    // Показываем участок только для терапевта
+    typeSelect.addEventListener("change", () => {
+        const isTherapist = typeSelect.value === "THERAPIST";
+
+        districtWrapper.hidden = !isTherapist;
+        districtSelect.required = isTherapist;
+
+        if (!isTherapist) {
+            districtSelect.value = "";
+        }
+    });
+
+    const message = document.createElement("p");
+    message.className = "form-message";
+
+    const saveButton = document.createElement("button");
+    saveButton.type = "submit";
+    saveButton.className = "action-button";
+    saveButton.textContent = "Сохранить врача";
+
+    const backButton = document.createElement("button");
+    backButton.type = "button";
+    backButton.className = "action-button secondary-button";
+    backButton.textContent = "Назад к списку";
+    backButton.addEventListener("click", loadDoctors);
+
+    form.append(
+        nameWrapper,
+        typeWrapper,
+        districtWrapper,
+        saveButton,
+        backButton,
+        message
+    );
+
+    card.append(heading, form);
+    pageContent.append(card);
+
+    form.addEventListener("submit", async event => {
+        event.preventDefault();
+
+        const fullName = nameInput.value.trim();
+        const type = typeSelect.value;
+
+        if (!fullName || !type) {
+            message.textContent = "Заполни ФИО и выбери тип врача.";
+            message.className = "form-message error-message";
+            return;
+        }
+
+        if (
+            type === "THERAPIST" &&
+            !districtSelect.value
+        ) {
+            message.textContent = "Для терапевта необходимо выбрать участок.";
+            message.className = "form-message error-message";
+            return;
+        }
+
+        // Формируем объект в формате, который ожидает POST /api/doctors
+        const doctor = {
+            fullName,
+            type
+        };
+
+        if (type === "THERAPIST") {
+            doctor.district = {
+                id: Number(districtSelect.value)
+            };
+        }
+
+        saveButton.disabled = true;
+        message.textContent = "Сохраняем врача...";
+        message.className = "form-message";
+
+        try {
+            const response = await fetch("/api/doctors", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(doctor)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(
+                    errorText || `Ошибка сервера: ${response.status}`
+                );
+            }
+
+            alert("Врач успешно добавлен!");
+            await loadDoctors();
+
+        } catch (error) {
+            message.textContent =
+                `Не удалось сохранить врача: ${error.message}`;
+            message.className = "form-message error-message";
+        } finally {
+            saveButton.disabled = false;
+        }
+    });
 }
 
 
