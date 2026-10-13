@@ -388,6 +388,14 @@ async function showDoctorSchedule(doctor) {
     backButton.textContent = "← К списку врачей";
     backButton.addEventListener("click", loadDoctors);
 
+    const addScheduleButton = document.createElement("button");
+    addScheduleButton.className = "action-button";
+    addScheduleButton.textContent = "+ Создать расписание";
+
+    addScheduleButton.addEventListener("click", () => {
+        showDoctorScheduleForm(doctor);
+    });
+
     const filters = document.createElement("div");
     filters.className = "schedule-filters";
 
@@ -420,7 +428,13 @@ async function showDoctorSchedule(doctor) {
     result.className = "schedule-result";
 
     filters.append(monthSelect, yearInput, loadButton);
-    card.append(heading, backButton, filters, result);
+    card.append(
+        heading,
+        backButton,
+        addScheduleButton,
+        filters,
+        result
+    );
     pageContent.append(card);
 
     monthSelect.value = String(new Date().getMonth() + 1);
@@ -440,6 +454,133 @@ async function showDoctorSchedule(doctor) {
         Number(monthSelect.value),
         result
     );
+}
+
+
+async function showDoctorScheduleForm(doctor) {
+    pageContent.replaceChildren();
+
+    const card = document.createElement("div");
+    card.className = "welcome-card";
+
+    const heading = document.createElement("h2");
+    heading.textContent = `Создание расписания: ${doctor.fullName}`;
+
+    const form = document.createElement("form");
+    form.className = "patient-form";
+
+    // Дата работы
+    const dateWrapper = document.createElement("div");
+    dateWrapper.className = "form-field";
+
+    const dateLabel = document.createElement("label");
+    dateLabel.textContent = "Дата работы";
+    dateLabel.htmlFor = "schedule-date";
+
+    const dateInput = document.createElement("input");
+    dateInput.id = "schedule-date";
+    dateInput.type = "date";
+    dateInput.required = true;
+
+    const today = new Date();
+    dateInput.min = [
+        today.getFullYear(),
+        String(today.getMonth() + 1).padStart(2, "0"),
+        String(today.getDate()).padStart(2, "0")
+    ].join("-");
+
+    dateWrapper.append(dateLabel, dateInput);
+
+    // Выбор смены
+    const shiftWrapper = document.createElement("div");
+    shiftWrapper.className = "form-field";
+
+    const shiftLabel = document.createElement("label");
+    shiftLabel.textContent = "Рабочая смена";
+    shiftLabel.htmlFor = "schedule-shift";
+
+    const shiftSelect = document.createElement("select");
+    shiftSelect.id = "schedule-shift";
+    shiftSelect.required = true;
+
+    shiftSelect.add(new Option("Утренняя (08:00–12:00)", "morning"));
+    shiftSelect.add(new Option("Вечерняя (13:00–17:00)", "evening"));
+
+    shiftWrapper.append(shiftLabel, shiftSelect);
+
+    const message = document.createElement("p");
+    message.className = "form-message";
+
+    const saveButton = document.createElement("button");
+    saveButton.type = "submit";
+    saveButton.className = "action-button";
+    saveButton.textContent = "Сохранить расписание";
+
+    const backButton = document.createElement("button");
+    backButton.type = "button";
+    backButton.className = "action-button secondary-button";
+    backButton.textContent = "Назад к расписанию";
+    backButton.addEventListener("click", () => {
+        showDoctorSchedule(doctor);
+    });
+
+    form.append(
+        dateWrapper,
+        shiftWrapper,
+        saveButton,
+        backButton,
+        message
+    );
+
+    card.append(heading, form);
+    pageContent.append(card);
+
+    form.addEventListener("submit", async event => {
+        event.preventDefault();
+
+        const isMorning = shiftSelect.value === "morning";
+
+        const schedule = {
+            doctor: { id: doctor.id },
+            workDate: dateInput.value,
+            startTime: isMorning ? "08:00:00" : "13:00:00",
+            endTime: isMorning ? "12:00:00" : "17:00:00"
+        };
+
+        saveButton.disabled = true;
+        message.className = "form-message";
+        message.textContent = "Сохраняем расписание...";
+
+        try {
+            const response = await fetch("/api/doctor-schedules", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(schedule)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+
+                throw new Error(
+                    errorText || `Ошибка сервера: ${response.status}`
+                );
+            }
+
+            alert("Расписание успешно создано!");
+
+            // Возвращаемся к расписанию врача.
+            await showDoctorSchedule(doctor);
+
+        } catch (error) {
+            message.textContent =
+                `Не удалось создать расписание: ${error.message}`;
+            message.className = "form-message error-message";
+        } finally {
+            saveButton.disabled = false;
+        }
+    });
 }
 
 async function loadDoctorMonth(doctorId, year, month, result) {
