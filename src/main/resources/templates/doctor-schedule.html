@@ -65,22 +65,37 @@
                 <th>Время</th>
                 <th>Статус</th>
                 <th>Пациент</th>
+                <th>Действие</th>
             </tr>
             </thead>
+
 
             <tbody>
             <tr th:each="slot : ${day.slots}">
                 <td th:text="${slot.time}"></td>
 
                 <td th:text="${slot.available
-                    ? 'Свободно'
-                    : 'Занято'}"></td>
+        ? 'Свободно'
+        : 'Занято'}"></td>
 
                 <td th:text="${slot.patientName != null
-                    ? slot.patientName
-                    : '—'}"></td>
+        ? slot.patientName
+        : '—'}"></td>
+
+                <td>
+                    <a th:if="${slot.available}"
+                       th:href="@{/appointments/new(
+               scheduleId=${day.scheduleId},
+               time=${slot.time}
+           )}">
+                        Записать пациента
+                    </a>
+
+                    <span th:unless="${slot.available}">—</span>
+                </td>
             </tr>
             </tbody>
+
         </table>
     </section>
 </main>

@@ -1,0 +1,66 @@
+
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Запись на приём — Поликлиника</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+<main>
+    <h1>Запись пациента на приём</h1>
+
+    <p>
+        <strong>Врач:</strong>
+        <span th:text="${schedule.doctor.fullName}"></span>
+    </p>
+
+    <p>
+        <strong>Дата:</strong>
+        <span th:text="${#temporals.format(
+            schedule.workDate, 'dd.MM.yyyy')}"></span>
+    </p>
+
+    <p>
+        <strong>Время:</strong>
+        <span th:text="${time}"></span>
+    </p>
+
+    <p th:if="${errorMessage}" th:text="${errorMessage}"
+       style="color: red;"></p>
+
+    <form th:action="@{/appointments}" method="post">
+        <input type="hidden" name="scheduleId"
+               th:value="${schedule.id}">
+
+        <input type="hidden" name="time" th:value="${time}">
+
+        <label for="patientId">Пациент:</label>
+
+        <select id="patientId" name="patientId" required>
+            <option value="">Выберите пациента</option>
+
+            <option th:each="patient : ${patients}"
+                    th:value="${patient.id}"
+                    th:text="${patient.fullName
+                        + ' — участок №'
+                        + patient.district.number}">
+            </option>
+        </select>
+
+        <p>
+            <button type="submit">Записать пациента</button>
+        </p>
+    </form>
+
+    <p>
+        <a th:href="@{/doctors/{id}/schedule(
+            id=${schedule.doctor.id},
+            year=${schedule.workDate.year},
+            month=${schedule.workDate.monthValue}
+        )}">Вернуться к расписанию</a>
+    </p>
+</main>
+</body>
+</html>
