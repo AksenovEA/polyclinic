@@ -626,7 +626,7 @@ async function showAppointmentForm() {
     const message = document.getElementById("appointment-message");
     const form = document.getElementById("appointment-form");
 
-    // Не разрешаем выбирать прошедшие даты.
+
     const today = new Date();
     const localToday = [
         today.getFullYear(),
@@ -712,7 +712,7 @@ async function showAppointmentForm() {
 
             const data = await response.json();
 
-            // Ищем расписание именно выбранного дня.
+
             const day = data.days.find(item => item.date === date);
 
             if (!day) {
@@ -720,7 +720,6 @@ async function showAppointmentForm() {
                 return;
             }
 
-            // Запоминаем ID расписания конкретного рабочего дня.
             selectedScheduleId = day.scheduleId;
 
             const freeSlots = day.slots.filter(slot => slot.available);
