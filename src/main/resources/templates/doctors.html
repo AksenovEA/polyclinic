@@ -15,6 +15,10 @@
         <a th:href="@{/doctors/new}">Добавить врача</a>
     </p>
 
+    <p>
+        <a th:href="@{/schedules/new}">Создать расписание</a>
+    </p>
+
     <p th:if="${successMessage}"
        th:text="${successMessage}">
     </p>
@@ -34,6 +38,7 @@
             <th>ФИО</th>
             <th>Тип врача</th>
             <th>Участок</th>
+            <th>Расписание</th>
         </tr>
         </thead>
 
@@ -45,6 +50,11 @@
             <td th:text="${doctor.district != null
                 ? doctor.district.number
                 : 'Не закреплён'}"></td>
+            <td>
+                <a th:href="@{/doctors/{id}/schedule(id=${doctor.id})}">
+                    Смотреть расписание
+                </a>
+            </td>
         </tr>
         </tbody>
     </table>

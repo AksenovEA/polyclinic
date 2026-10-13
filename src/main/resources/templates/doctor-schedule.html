@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Расписание врача — Поликлиника</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+<main>
+    <h1>Расписание врача</h1>
+
+    <h2 th:text="${doctor.fullName}">ФИО врача</h2>
+
+    <p>
+        <span>Тип врача: </span>
+        <span th:text="${doctor.type}"></span>
+    </p>
+
+    <p>
+        <a th:href="@{/doctors}">К списку врачей</a>
+        |
+        <a th:href="@{/}">На главную</a>
+    </p>
+
+    <section>
+        <a th:href="@{/doctors/{id}/schedule(
+            id=${doctor.id},
+            year=${previousMonth.year},
+            month=${previousMonth.monthValue}
+        )}">← Предыдущий месяц</a>
+
+        <strong
+                th:text="${#temporals.format(
+                selectedMonth.atDay(1), 'LLLL yyyy'
+            )}">
+            Месяц
+        </strong>
+
+        <a th:href="@{/doctors/{id}/schedule(
+            id=${doctor.id},
+            year=${nextMonth.year},
+            month=${nextMonth.monthValue}
+        )}">Следующий месяц →</a>
+    </section>
+
+    <p th:if="${#lists.isEmpty(days)}">
+        На этот месяц расписание ещё не создано.
+    </p>
+
+    <section th:each="day : ${days}">
+        <h3>
+            <span th:text="${#temporals.format(
+                day.date, 'dd.MM.yyyy'
+            )}"></span>
+            <span> — </span>
+            <span th:text="${day.startTime}"></span>
+            <span>–</span>
+            <span th:text="${day.endTime}"></span>
+        </h3>
+
+        <table>
+            <thead>
+            <tr>
+                <th>Время</th>
+                <th>Статус</th>
+                <th>Пациент</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="slot : ${day.slots}">
+                <td th:text="${slot.time}"></td>
+
+                <td th:text="${slot.available
+                    ? 'Свободно'
+                    : 'Занято'}"></td>
+
+                <td th:text="${slot.patientName != null
+                    ? slot.patientName
+                    : '—'}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,60 @@
+
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создание расписания</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+<main>
+    <h1>Создание расписания врача</h1>
+
+    <p th:if="${errorMessage}"
+       th:text="${errorMessage}"></p>
+
+    <form th:action="@{/schedules}" method="post">
+
+        <label for="doctorId">Врач</label>
+        <select id="doctorId" name="doctorId" required>
+            <option value="">Выберите врача</option>
+            <option th:each="doctor : ${doctors}"
+                    th:value="${doctor.id}"
+                    th:text="${doctor.fullName + ' (' + doctor.type + ')'}">
+            </option>
+        </select>
+
+        <p>
+            <label for="workDate">Дата приёма</label>
+            <input type="date" id="workDate"
+                   name="workDate" required>
+        </p>
+
+        <p>Смена</p>
+
+        <label>
+            <input type="radio" name="shift"
+                   value="MORNING" required>
+            Утренняя (08:00–12:00)
+        </label>
+
+        <br>
+
+        <label>
+            <input type="radio" name="shift"
+                   value="AFTERNOON" required>
+            Дневная (13:00–17:00)
+        </label>
+
+        <p>
+            <button type="submit">Создать расписание</button>
+        </p>
+    </form>
+
+    <p>
+        <a th:href="@{/doctors}">К списку врачей</a>
+    </p>
+</main>
+</body>
+</html>
