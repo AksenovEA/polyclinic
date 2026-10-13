@@ -3,7 +3,8 @@ const pageTitles = {
     home: "Главная",
     doctors: "Врачи и расписание",
     patients: "Пациенты",
-    appointments: "Запись на приём"
+    appointments: "Запись на приём",
+    districts: "Участки"
 };
 
 const pageDescriptions = {
@@ -33,7 +34,9 @@ document.querySelectorAll(".nav-button").forEach(button => {
             loadPatients();
         } else if (page === "appointments") {
             showAppointmentForm();
-        } else {
+        } else if (page === "districts") {
+            loadDistricts();
+        }else {
             showHome();
         }
     });
@@ -985,6 +988,204 @@ async function showAppointmentForm() {
             await loadAvailableTimes();
         } catch (error) {
             message.textContent = error.message;
+        }
+    });
+}
+
+
+async function loadDistricts() {
+    pageContent.replaceChildren();
+
+    try {
+        const response = await fetch("/api/districts");
+
+        if (!response.ok) {
+            throw new Error(`Ошибка сервера: ${response.status}`);
+        }
+
+        const districts = await response.json();
+
+        const card = document.createElement("div");
+        card.className = "welcome-card";
+
+        const heading = document.createElement("h2");
+        heading.textContent = "Список участков";
+
+        const addButton = document.createElement("button");
+        addButton.className = "action-button";
+        addButton.textContent = "+ Добавить участок";
+        addButton.addEventListener("click", showDistrictForm);
+
+        card.append(heading, addButton);
+
+        if (districts.length === 0) {
+            const message = document.createElement("p");
+            message.textContent = "Участки пока не добавлены.";
+            card.append(message);
+        } else {
+            const table = document.createElement("table");
+            table.className = "data-table";
+
+            const thead = document.createElement("thead");
+            const headerRow = document.createElement("tr");
+
+            ["Номер участка", "Адрес"].forEach(title => {
+                const th = document.createElement("th");
+                th.textContent = title;
+                headerRow.append(th);
+            });
+
+            thead.append(headerRow);
+
+            const tbody = document.createElement("tbody");
+
+            districts.forEach(district => {
+                const row = document.createElement("tr");
+
+                const numberCell = document.createElement("td");
+                numberCell.textContent = district.number;
+
+                const addressCell = document.createElement("td");
+                addressCell.textContent = district.address;
+
+                row.append(numberCell, addressCell);
+                tbody.append(row);
+            });
+
+            table.append(thead, tbody);
+            card.append(table);
+        }
+
+        pageContent.replaceChildren(card);
+    } catch (error) {
+        showError(`Не удалось загрузить участки: ${error.message}`);
+    }
+}
+
+
+async function showDistrictForm() {
+    pageContent.replaceChildren();
+
+    const card = document.createElement("div");
+    card.className = "welcome-card";
+
+    const heading = document.createElement("h2");
+    heading.textContent = "Добавление участка";
+
+    const form = document.createElement("form");
+    form.className = "patient-form";
+
+    function createField(labelText, name, type = "text") {
+        const wrapper = document.createElement("div");
+        wrapper.className = "form-field";
+
+        const label = document.createElement("label");
+        label.htmlFor = name;
+        label.textContent = labelText;
+
+        const input = document.createElement("input");
+        input.id = name;
+        input.name = name;
+        input.type = type;
+        input.required = true;
+
+        wrapper.append(label, input);
+
+        return { wrapper, input };
+    }
+
+    const numberField = createField(
+        "Номер участка",
+        "districtNumber",
+        "number"
+    );
+
+    numberField.input.min = "1";
+    numberField.input.step = "1";
+    numberField.input.placeholder = "Например, 12";
+
+    const addressField = createField(
+        "Адрес участка",
+        "districtAddress"
+    );
+
+    addressField.input.maxLength = 255;
+    addressField.input.placeholder = "Улица, дом";
+
+    const message = document.createElement("p");
+    message.className = "form-message";
+
+    const saveButton = document.createElement("button");
+    saveButton.type = "submit";
+    saveButton.className = "action-button";
+    saveButton.textContent = "Сохранить участок";
+
+    const backButton = document.createElement("button");
+    backButton.type = "button";
+    backButton.className = "action-button secondary-button";
+    backButton.textContent = "Назад к списку";
+    backButton.addEventListener("click", loadDistricts);
+
+    form.append(
+        numberField.wrapper,
+        addressField.wrapper,
+        saveButton,
+        backButton,
+        message
+    );
+
+    card.append(heading, form);
+    pageContent.append(card);
+
+    form.addEventListener("submit", async event => {
+        event.preventDefault();
+
+        const number = Number(numberField.input.value);
+        const address = addressField.input.value.trim();
+
+        if (!Number.isInteger(number) || number <= 0) {
+            message.textContent =
+                "Номер участка должен быть положительным целым числом.";
+            message.className = "form-message error-message";
+            return;
+        }
+
+        if (!address) {
+            message.textContent = "Укажи адрес участка.";
+            message.className = "form-message error-message";
+            return;
+        }
+
+        const district = { number, address };
+
+        saveButton.disabled = true;
+        message.textContent = "Сохраняем участок...";
+        message.className = "form-message";
+
+        try {
+            const response = await fetch("/api/districts", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(district)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(
+                    errorText || `Ошибка сервера: ${response.status}`
+                );
+            }
+
+            alert("Участок успешно добавлен!");
+            await loadDistricts();
+        } catch (error) {
+            message.textContent =
+                `Не удалось сохранить участок: ${error.message}`;
+            message.className = "form-message error-message";
+        } finally {
+            saveButton.disabled = false;
         }
     });
 }
